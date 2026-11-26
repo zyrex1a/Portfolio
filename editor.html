@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site editor</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; height: 100vh; display: flex; flex-direction: column; font: 15px/1.5 system-ui, sans-serif; background: #f2f2f8; color: #14142b; }
+  header { display: flex; gap: .8rem; align-items: center; flex-wrap: wrap; padding: .7rem 1rem; background: #fff; border-bottom: 1px solid #dcdce8; }
+  header h1 { margin: 0 auto 0 0; font-size: 1.05rem; }
+  header p { margin: 0; color: #666; font-size: .85rem; }
+  .saved { color: #147a42; font-weight: 700; }
+  button { font: inherit; cursor: pointer; padding: .45rem .9rem; border-radius: 8px; border: 1px solid #c9c9d8; background: #fff; color: #14142b; }
+  button.primary { background: #5b3df5; border-color: #5b3df5; color: #fff; font-weight: 700; }
+  button.certificate { background: #ecfdf3; border-color: #86d6a6; color: #116438; font-weight: 800; }
+  main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(340px, 460px) 1fr; }
+  #form { overflow: auto; padding: 1rem; }
+  #preview { width: 100%; height: 100%; border: 0; background: #fff; }
+  details.sec { background: #fff; border: 1px solid #dcdce8; border-radius: 10px; margin-bottom: .7rem; padding: 0 .9rem; }
+  details.sec > summary { cursor: pointer; font-weight: 700; padding: .8rem 0; }
+  label { display: block; margin: .55rem 0; font-size: .85rem; color: #555; }
+  input, textarea, select { display: block; width: 100%; margin-top: .2rem; padding: .45rem .6rem; font: inherit; color: #14142b; background: #fff; border: 1px solid #c9c9d8; border-radius: 8px; }
+  textarea { min-height: 4.6rem; resize: vertical; }
+  input[type=file] { border: 0; padding: .3rem 0; }
+  .item { margin: .6rem 0; padding: 0 .8rem .6rem; background: #f9f9ff; border: 1px solid #e3e3ee; border-radius: 10px; }
+  .bar { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding-top: .6rem; font-weight: 700; }
+  .bar button { padding: .2rem .6rem; font-size: .8rem; }
+  .hint { color: #777; font-size: .8rem; margin: .3rem 0 .6rem; }
+  .certificate-sec { border: 2px solid #32a866 !important; box-shadow: 0 0 0 4px rgba(50,168,102,.1); }
+  .certificate-note { margin: 0 0 .8rem; padding: .7rem .8rem; border-radius: 8px; background: #ecfdf3; color: #116438; font-size: .85rem; font-weight: 700; }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; grid-template-rows: 42vh 1fr; } #preview { order: -1; } }
+</style>
+<script src="config.js"></script>
+</head>
+<body>
+<header>
+  <h1>Site editor</h1>
+  <p>Edit the fields. Your draft is saved in this browser.</p>
+  <span class="saved" id="saved" aria-live="polite"></span>
+  <button class="certificate" id="go-diplomas" type="button">🎓 Add diploma / certificate</button>
+  <button id="reset" type="button">Reset demo</button>
+  <button class="primary" id="download" type="button">Download config.js</button>
+</header>
+<main>
+  <div id="form"></div>
+  <iframe id="preview" src="index.html" title="Live preview"></iframe>
+</main>
+<script>
+var original = JSON.parse(JSON.stringify(SITE));
+var data = original;
+function mergeDefaults(defaults, saved) {
+  if (Array.isArray(defaults)) return Array.isArray(saved) ? saved : JSON.parse(JSON.stringify(defaults));
+  if (defaults && typeof defaults === "object") {
+    var result = saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+    Object.keys(defaults).forEach(function (key) { result[key] = mergeDefaults(defaults[key], result[key]); });
+    return result;
+  }
+  return saved === undefined || saved === null ? defaults : saved;
+}
+try {
+  var draft = localStorage.getItem("portfolio-editor-draft-v2") || localStorage.getItem("portfolio-editor-draft");
+  if (draft) data = mergeDefaults(original, JSON.parse(draft));
+} catch (e) {}
+var frame = document.getElementById("preview"), timer;
+
+function push() {
+  clearTimeout(timer);
+  timer = setTimeout(function () {
+    frame.contentWindow.postMessage({ type: "site", site: data }, "*");
+    try { localStorage.setItem("portfolio-editor-draft-v2", JSON.stringify(data)); } catch (e) {}
+    document.getElementById("saved").textContent = "Saved";
+    setTimeout(function () { document.getElementById("saved").textContent = ""; }, 1200);
+  }, 120);
+}
+frame.addEventListener("load", push);
+
+var NAMES = {
+  seo: "Google title and description", hero: "Top of the page", about: "About", tech: "Technology strip",
+  services: "What I do", process: "How I work", projects: "Projects", skills: "Skills", diplomas: "Diplomas & certificates", experience: "Experience",
+  testimonials: "Kind words", faq: "Questions", contact: "Contact", social: "Social links", ui: "Menu and button text (advanced)",
+  formAction: "Form address (Formspree URL)", q: "Question", a: "Answer", lang: "Language code (en, fr, ar...)",
+  backgroundStyle: "Background style", backgroundImage: "Custom background image", palette: "Color palette", image: "Image", photo: "Your photo", document: "Diploma (image or PDF)", button: "Button text"
+};
+function pretty(k) { return NAMES[k] || k.replace(/([A-Z])/g, " $1").replace(/[_-]/g, " ").replace(/^./, function (c) { return c.toUpperCase(); }); }
+function el(tag, cls, txt) { var n = document.createElement(tag); if (cls) n.className = cls; if (txt !== undefined) n.textContent = txt; return n; }
+function blank(v) {
+  if (v === undefined || v === null) return {};
+  if (typeof v === "string") return "";
+  if (Array.isArray(v)) return [];
+  var o = {}; Object.keys(v).forEach(function (k) { o[k] = blank(v[k]); }); return o;
+}
+function firstText(item) {
+  var k = Object.keys(item).filter(function (x) { return typeof item[x] === "string" && item[x] && x !== "image" && x !== "icon"; })[0];
+  return k ? item[k].slice(0, 38) : "New item";
+}
+
+function pickImage(file, done) {
+  var r = new FileReader();
+  r.onload = function () {
+    var img = new Image();
+    img.onload = function () {
+      var s = Math.min(1, 1200 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      done(c.toDataURL("image/jpeg", 0.82));
+    };
+    img.src = r.result;
+  };
+  r.readAsDataURL(file);
+}
+
+function field(box, holder, key, label) {
+  var v = holder[key];
+  if (typeof v === "string") {
+    var lab = el("label", "", label), inp;
+    if (key === "backgroundStyle") {
+      inp = el("select");
+      [["depth","Depth · architectural 3D"],["studio","Studio · clean"],["aurora","Aurora · soft gradients"],["grid","Architect · subtle grid"],["sand","Sand · warm texture"],["custom","Custom · upload your image"]].forEach(function(p){var o=el("option","",p[1]);o.value=p[0];inp.appendChild(o);});
+      inp.value=v;
+    } else if (key === "palette") {
+      inp = el("select");
+      ["violet", "ocean", "coral", "emerald"].forEach(function (p) { var o = el("option", "", p); o.value = p; inp.appendChild(o); });
+      inp.value = v;
+    } else if (key === "image" || key === "photo" || key === "document" || key === "backgroundImage") {
+      inp = el("input"); inp.placeholder = key === "document" ? "Upload an image or PDF below" : "Upload a picture below";
+      inp.value = v.indexOf("data:application/pdf") === 0 ? "(uploaded PDF)" : (v.indexOf("data:") === 0 ? "(uploaded picture)" : v);
+      var file = el("input"); file.type = "file"; file.accept = key === "document" ? "image/*,application/pdf" : "image/*";
+      file.onchange = function () {
+        if (!file.files[0]) return;
+        if (key === "document" && file.files[0].type === "application/pdf") {
+          var reader = new FileReader();
+          reader.onload = function () { holder[key] = reader.result; inp.value = "(uploaded PDF)"; push(); };
+          reader.readAsDataURL(file.files[0]);
+        } else {
+          pickImage(file.files[0], function (url) { holder[key] = url; inp.value = "(uploaded picture)"; push(); });
+        }
+      };
+      lab.appendChild(inp); lab.appendChild(file); box.appendChild(lab);
+      inp.oninput = function () { holder[key] = inp.value; push(); };
+      return;
+    } else {
+      inp = (v.length > 60 || ["text", "description", "quote", "a", "headline", "lead"].indexOf(key) > -1) ? el("textarea") : el("input");
+      inp.value = v;
+    }
+    inp.oninput = inp.onchange = function () { holder[key] = inp.value; push(); };
+    lab.appendChild(inp); box.appendChild(lab);
+  } else if (Array.isArray(v) && (!v.length || typeof v[0] === "string")) {
+    var l2 = el("label", "", label + " (one per line)"), ta = el("textarea");
+    ta.value = v.join("\n");
+    ta.oninput = function () { holder[key] = ta.value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean); push(); };
+    l2.appendChild(ta); box.appendChild(l2);
+  } else if (Array.isArray(v)) {
+    var sourceTemplate = v[0];
+    if (!sourceTemplate && key === "diplomas") sourceTemplate = { title: "", institution: "", year: "", description: "", document: "", button: "View document" };
+    if (!sourceTemplate) sourceTemplate = { title: "" };
+    var tpl = blank(sourceTemplate), wrap = el("div");
+    box.appendChild(el("p", "hint", label));
+    box.appendChild(wrap);
+    (function draw() {
+      wrap.innerHTML = "";
+      v.forEach(function (item, i) {
+        var card = el("div", "item"), bar = el("div", "bar"), rm = el("button", "", "Remove");
+        rm.type = "button";
+        rm.onclick = function () { v.splice(i, 1); draw(); push(); };
+        bar.appendChild(el("span", "", firstText(item))); bar.appendChild(rm); card.appendChild(bar);
+        Object.keys(item).forEach(function (k) { field(card, item, k, pretty(k)); });
+        wrap.appendChild(card);
+      });
+      var addBtn = el("button", "", "+ Add");
+      addBtn.type = "button";
+      addBtn.onclick = function () { v.push(JSON.parse(JSON.stringify(tpl))); draw(); push(); };
+      wrap.appendChild(addBtn);
+    })();
+  } else {
+    box.appendChild(el("p", "hint", label));
+    Object.keys(v).forEach(function (k) { field(box, v, k, pretty(k)); });
+  }
+}
+
+var form = document.getElementById("form");
+var general = el("details", "sec"); general.open = true;
+general.appendChild(el("summary", "", "General"));
+form.appendChild(general);
+["name"].concat(Object.keys(data).filter(function (k) { return k !== "name"; })).forEach(function (k) {
+  if (typeof data[k] === "string") { field(general, data, k, k === "name" ? "Your name" : pretty(k)); return; }
+  var sec = el("details", "sec");
+  if (k === "diplomas") {
+    sec.id = "editor-diplomas"; sec.open = true; sec.className += " certificate-sec";
+  }
+  sec.appendChild(el("summary", "", pretty(k)));
+  if (k === "diplomas") sec.appendChild(el("p", "certificate-note", "Add, remove or upload your diplomas here. Accepted files: JPG, PNG and PDF."));
+  field(sec, data, k, "");
+  form.appendChild(sec);
+});
+
+function buildOutput() {
+  return "/* Generated by editor.html. Replace your old config.js with this file. */\nconst SITE = " + JSON.stringify(data, null, 2) + ";\n";
+}
+document.getElementById("download").onclick = function () {
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([buildOutput()], { type: "text/javascript" }));
+  a.download = "config.js";
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+};
+document.getElementById("reset").onclick = function () {
+  if (!window.confirm("Replace all edits with the original demo content?")) return;
+  try { localStorage.removeItem("portfolio-editor-draft"); localStorage.removeItem("portfolio-editor-draft-v2"); } catch (e) {}
+  location.reload();
+};
+document.getElementById("go-diplomas").onclick = function () {
+  var section = document.getElementById("editor-diplomas");
+  if (!section) return;
+  section.open = true;
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
+};
+</script>
+</body>
+</html>

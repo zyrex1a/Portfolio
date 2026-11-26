@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio</title>
+  <meta name="description" content="">
+  <meta name="theme-color" content="#5b3df5">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Portfolio">
+  <meta property="og:description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="premium.css">
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script src="premium.js" defer></script>
+  <script src="spatial.js" defer></script>
+  <script src="card-effects.js" defer></script>
+</head>
+<body>
+  <!-- You do not need to edit this file. All your content lives in config.js -->
+  <div id="bar"></div>
+  <a class="skip" id="skip" href="#main"></a>
+
+  <header class="nav">
+    <a class="brand" id="brand" href="#top"></a>
+    <nav id="nav" aria-label="Main"></nav>
+    <button id="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="nav">☰</button>
+    <button id="theme" type="button" aria-label="Switch between light and dark theme"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></button>
+  </header>
+
+  <main id="main">
+    <noscript><p class="wrap">Please enable JavaScript to view this site.</p></noscript>
+
+    <section class="hero wrap" id="top">
+      <div class="hero-copy">
+        <span class="hello" id="hello"></span>
+        <h1 id="name"></h1>
+        <p class="role" id="role"></p>
+        <p class="lead" id="lead"></p>
+        <div class="actions">
+          <a class="btn" id="btn-work" href="#projects"></a>
+          <a class="btn ghost" id="btn-contact" href="#contact"></a>
+        </div>
+        <div class="stats" id="stats"></div>
+      </div>
+      <div class="portrait-stage"><div class="orbit orbit-one" aria-hidden="true"></div><div class="orbit orbit-two" aria-hidden="true"></div><div class="floating-code" aria-hidden="true">&lt;/&gt;<small>DESIGN · DEVELOP · DELIVER</small></div><div class="photo" id="photo">
+        <span class="badge b1" id="badge-1"></span>
+        <span class="badge b2" id="badge-2"></span>
+      </div></div>
+    </section>
+
+    <div class="marquee" aria-hidden="true"><div class="track" id="track"></div></div>
+
+    <section class="wrap block split" id="about">
+      <h2 id="t-about"></h2>
+      <div>
+        <p class="big" id="about-headline"></p>
+        <p id="about-text"></p>
+        <dl class="facts" id="facts"></dl>
+      </div>
+    </section>
+
+    <section class="wrap block" id="services">
+      <h2 id="t-services"></h2>
+      <div class="services" id="service-list"></div>
+    </section>
+
+    <section class="wrap block" id="projects">
+      <h2 id="t-projects"></h2>
+      <div class="projects" id="project-list"></div>
+    </section>
+
+    <section class="band" id="process">
+      <div class="wrap block">
+        <h2 id="t-process"></h2>
+        <div class="steps" id="step-list"></div>
+      </div>
+    </section>
+
+    <section class="wrap block" id="skills">
+      <h2 id="t-skills"></h2>
+      <div class="skills" id="skill-list"></div>
+    </section>
+
+    <section class="wrap block" id="diplomas">
+      <h2 id="t-diplomas"></h2>
+      <div class="diplomas" id="diploma-list"></div>
+    </section>
+
+    <section class="wrap block split" id="experience">
+      <h2 id="t-experience"></h2>
+      <div class="timeline" id="timeline"></div>
+    </section>
+
+    <section class="wrap block" id="testimonials">
+      <h2 id="t-testimonials"></h2>
+      <div class="quotes" id="quote-list"></div>
+    </section>
+
+    <section class="wrap block split" id="faq">
+      <h2 id="t-faq"></h2>
+      <div class="faq" id="faq-list"></div>
+    </section>
+
+    <section class="wrap block" id="contact">
+      <div class="panel">
+        <div>
+          <h2 id="t-contact"></h2>
+          <p class="big"><span id="contact-lead"></span> <a class="mail" id="mail" href="#"></a></p>
+        </div>
+        <form id="form" method="POST">
+          <div class="form-status" id="form-status" role="status" aria-live="polite"></div>
+          <label><span id="l-name"></span> <input name="name" required autocomplete="name"></label>
+          <label><span id="l-email"></span> <input type="email" name="email" required autocomplete="email"></label>
+          <label><span id="l-message"></span> <textarea name="message" rows="5" required></textarea></label>
+          <button class="btn" id="send" type="submit"></button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <button id="back-top" type="button" aria-label="Back to top" hidden>↑</button>
+  <footer class="wrap foot">
+    <p id="copy"></p>
+    <p id="social"></p>
+  </footer>
+</body>
+</html>
