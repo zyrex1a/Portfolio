@@ -35,6 +35,7 @@ Le site est construit en HTML, CSS et JavaScript natifs ; aucune installation de
 ## Contact
 
 - GitHub : https://github.com/zyrex1a
+- LinkedIn : https://www.linkedin.com/in/zakaria-oulharir-8337b5451/
 - E-mail : za06karia@gmail.com
 
 ## Note
